@@ -330,49 +330,66 @@ void game_room_initialize(struct game_room game_rooms[7]) {
     }
 }
 
-int valid_room(char usr_input[15], struct game_room *room) {
+int valid_room(char usr_input[15], struct game_room game_rooms[7], int curr_room) {
     int i;
     char temp[15];
-    for (i = 0; i < room->num_doors; i++) {
-        strcpy(temp, room->doors[i]);
+    for (i = 0; i < game_rooms[curr_room].num_doors; i++) {
+        strcpy(temp, game_rooms[curr_room].doors[i]);
         strcat(temp, "\n");
         if(strcmp(temp, usr_input) == 0){
             int j;
             for (j = 0; j < 7; j++) {
-                if (room->doors[i] == )
+                char room_name[15];
+                strcpy(room_name, game_rooms[j].name);
+                strcat(room_name, "\n");
+                if (strcmp(usr_input, room_name) == 0) {
+                    return j;
+                }
             }
         }
     } 
     return -1;
 }
 
-void actual_game(struct game_room game_rooms[7]) {
-    char curr_loc[30] = "CURRENT LOCATION: ";
-    char poss_conn[80] = "POSSIBLE CONNECTIONS: ";
-    char where_to[30] = "WHERE TO? >";
-    char type_test[10] = "END_ROOM";
-    int curr_room = 0;
-
-//    while(game_rooms[curr_room].type != "END_ROOM") {
-    printf("%s", game_rooms[2].name);
-    
-    char usr_input[15];
-    fgets(usr_input, 15, stdin);
-    
-    if(valid_room(usr_input, &game_rooms[curr_room]) == -1) {
-        printf("HUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
-    //    continue;
-    }
-    else{
-        printf("success\n");
-    }
-
-}
 
 void the_game() {
     struct game_room game_rooms[7];
     game_room_initialize(game_rooms);
-    actual_game(game_rooms);
+
+    char curr_loc[30] = "CURRENT LOCATION: ";
+    char poss_conn[80] = "POSSIBLE CONNECTIONS: ";
+    char where_to[30] = "WHERE TO? >";
+    int curr_room = 0;
+
+    while(game_rooms[curr_room].type != "END_ROOM") {
+        printf("%s",curr_loc);
+        printf("%s\n", game_rooms[curr_room].name);
+        printf("%s", poss_conn);
+        int i;
+        for (i = 0; i < game_rooms[curr_room].num_doors - 1; ++i) {
+            printf("%s, ", game_rooms[curr_room].doors[i]);
+        }
+        printf("%s.\n", game_rooms[curr_room].doors[i]);
+        printf("%s", where_to);
+        
+        char usr_input[15];
+        fgets(usr_input, 15, stdin);
+
+        int maybe_success = valid_room(usr_input, game_rooms, curr_room);
+        
+        if(maybe_success == -1) {
+            printf("HUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
+            continue;
+        }
+        else{
+            printf("success\n");
+            curr_room = maybe_success;
+        }
+        if(maybe_success == 1) {
+            break;
+        }
+    }
+
 //    printf("%s",game_rooms[7].name);
 /*    printf("%s\n", game_rooms[0].name);
     int i;
