@@ -330,13 +330,49 @@ void game_room_initialize(struct game_room game_rooms[7]) {
     }
 }
 
+int valid_room(char usr_input[15], struct game_room *room) {
+    int i;
+    char temp[15];
+    for (i = 0; i < room->num_doors; i++) {
+        strcpy(temp, room->doors[i]);
+        strcat(temp, "\n");
+        if(strcmp(temp, usr_input) == 0){
+            int j;
+            for (j = 0; j < 7; j++) {
+                if (room->doors[i] == )
+            }
+        }
+    } 
+    return -1;
+}
+
+void actual_game(struct game_room game_rooms[7]) {
+    char curr_loc[30] = "CURRENT LOCATION: ";
+    char poss_conn[80] = "POSSIBLE CONNECTIONS: ";
+    char where_to[30] = "WHERE TO? >";
+    char type_test[10] = "END_ROOM";
+    int curr_room = 0;
+
+//    while(game_rooms[curr_room].type != "END_ROOM") {
+    printf("%s", game_rooms[2].name);
+    
+    char usr_input[15];
+    fgets(usr_input, 15, stdin);
+    
+    if(valid_room(usr_input, &game_rooms[curr_room]) == -1) {
+        printf("HUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
+    //    continue;
+    }
+    else{
+        printf("success\n");
+    }
+
+}
+
 void the_game() {
     struct game_room game_rooms[7];
     game_room_initialize(game_rooms);
-    int i;
-    for (i = 0; i < 7; ++i) {
-        printf("%s", game_rooms[i].type);
-    }
+    actual_game(game_rooms);
 //    printf("%s",game_rooms[7].name);
 /*    printf("%s\n", game_rooms[0].name);
     int i;
