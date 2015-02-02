@@ -27,9 +27,9 @@ struct game_room
 };
 
 void intro() {
-    printf("Welcome to the room game!\n");
-    printf("My processID: %d\n", getpid());
-    printf("More to come :)\n");
+//    printf("Welcome to the room game!\n");
+//    printf("My processID: %d\n", getpid());
+//    printf("More to come :)\n");
 }
 
 int num_of_doors() {
@@ -172,7 +172,7 @@ void write_rooms(int rand_nums[7], char *room_names[10]) {
         rooms[i] = room_default;
         rooms[i].name = room_names[rand_nums[i]];
         rooms[i].num_doors = num_of_doors();
-        printf("%s%d\n",rooms[i].name, rooms[i].num_doors);
+//        printf("%s%d\n",rooms[i].name, rooms[i].num_doors);
     }
 
     for (i = 0; i < 7; ++i) {
@@ -215,9 +215,9 @@ void write_rooms(int rand_nums[7], char *room_names[10]) {
     int p;
     for(m = 0; m < 7; m++) {
         for (p = 0; p < rooms[m].num_doors; p++){
-            printf("%d ", rooms[m].doors[p]);
+//            printf("%d ", rooms[m].doors[p]);
         }
-        printf("num_doors: %d\n", rooms[m].num_doors);
+//        printf("num_doors: %d\n", rooms[m].num_doors);
     }
 
     rooms[0].type = "START_ROOM";
@@ -356,10 +356,12 @@ void the_game() {
     struct game_room game_rooms[7];
     game_room_initialize(game_rooms);
 
-    char curr_loc[30] = "CURRENT LOCATION: ";
+    char curr_loc[30] = "\nCURRENT LOCATION: ";
     char poss_conn[80] = "POSSIBLE CONNECTIONS: ";
     char where_to[30] = "WHERE TO? >";
     int curr_room = 0;
+    int path[20];
+    int num_rooms = 0;
 
     while(game_rooms[curr_room].type != "END_ROOM") {
         printf("%s",curr_loc);
@@ -378,16 +380,25 @@ void the_game() {
         int maybe_success = valid_room(usr_input, game_rooms, curr_room);
         
         if(maybe_success == -1) {
-            printf("HUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
+            printf("\nHUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
             continue;
         }
         else{
-            printf("success\n");
+//            printf("success\n");
+            path[num_rooms] = maybe_success;
+            num_rooms++;
             curr_room = maybe_success;
         }
         if(maybe_success == 1) {
             break;
         }
+    }
+
+    printf("\nYOU HAVE FOUND THE END ROOM. CONGRATULATIONS!\n");
+    printf("YOU TOOK %d STEPS. YOUR PATH TO VICTORY WAS:\n", num_rooms);
+    int s;
+    for(s = 0; s < num_rooms; s++) {
+        printf("%s\n", game_rooms[path[s]].name);
     }
 
 //    printf("%s",game_rooms[7].name);
@@ -417,10 +428,9 @@ int main() {
     srand(time(NULL));
     make_rooms();
     intro();
-    printf("got here");
+//    printf("got here");
     the_game();
     
-    printf("\n");
 
     return 0;
 }
