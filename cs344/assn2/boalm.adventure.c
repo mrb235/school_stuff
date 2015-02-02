@@ -18,6 +18,14 @@ const struct room room_default = {"", "", {20, 20, 20, 20, 20, 20, 20}, 0};
 //This creates default values for the room struct.
 //I'm using 20 for the doors since they're out of range and are easy to see
 
+struct game_room
+{
+    char name[10];
+    char type[15];
+    char doors[7][10];
+    int num_doors;
+};
+
 void intro() {
     printf("Welcome to the room game!\n");
     printf("My processID: %d\n", getpid());
@@ -128,7 +136,9 @@ void write_files(struct room rooms[7]) {
         }
         char room_type[30] = "ROOM TYPE: ";
         strcat(room_type, rooms[f].type);
+        strcat(room_type, "\n");
         fputs(room_type, fp);
+        fclose(fp);
     }
 }
 void testing() {
@@ -255,12 +265,109 @@ void make_rooms() {
    */ 
 }
 
+void game_room_name(struct game_room *room, char line[40]) {
+/*    int begin = 11;
+    int end = strlen(line) - 1;
+    char temp[10];
+
+    strncpy(temp, line + begin, end - begin);
+
+    printf("%s ", temp);
+    room->name = temp;*/
+    char temp[10];
+}
+
+void get_line_data(struct game_room *room, char line[40]) {
+/*    printf("%s ", room->name);
+    char temp[10];
+    
+    if(line[5] == 'N') {
+    }*/
+    char temp[10];
+    
+    if (line[5] == 'N') {
+        strncpy(temp, line + 11, strlen(line) - 12);
+        strcpy(room->name, temp);
+    }
+    else if (line[5] == 'C') {
+        strncpy(temp, line + 14, strlen(line) - 15);
+        strcpy(room->doors[room->num_doors], temp);
+        room->num_doors++;
+    }
+    else if (line[5] == 'T') {
+        strncpy(temp, line + 11, strlen(line) - 17);
+        strcpy(room->type, temp);
+        strcat(room->type, "_ROOM");
+    }
+    
+}
+
+void game_room_initialize(struct game_room game_rooms[7]) {
+    int i;
+    
+    char file_name[40] = "boalm.adventure.";
+    char temp_file[40];
+    char pid_str[10];
+    sprintf(pid_str, "%d", getpid());
+    strcat(file_name, pid_str);
+    strcat(file_name, "/room");
+
+    for (i = 0; i < 7; ++i) {
+        game_rooms[i].num_doors = 0;
+        FILE *fp;
+        strcpy(temp_file, file_name);
+        char num[2];
+        sprintf(num, "%d", i);
+        strcat(temp_file, num);
+
+        fp = fopen(temp_file, "r");
+        char line[40];
+        while(fgets(line, 40, fp)) {
+            get_line_data(&game_rooms[i], line);
+        }
+
+        fclose(fp);
+    }
+}
+
+void the_game() {
+    struct game_room game_rooms[7];
+    game_room_initialize(game_rooms);
+    int i;
+    for (i = 0; i < 7; ++i) {
+        printf("%s", game_rooms[i].type);
+    }
+//    printf("%s",game_rooms[7].name);
+/*    printf("%s\n", game_rooms[0].name);
+    int i;
+    for ( i = 0; i < 7; ++i) {
+        printf("%s ", game_rooms[0].doors[i]);
+    }
+
+    char line[80];
+    FILE *fp;
+//    char file_name[10] = "room1";
+    char file_name[40] = "boalm.adventure.";
+    char pid_str[10];
+    sprintf(pid_str, "%d", getpid());
+    strcat(file_name, pid_str);
+    strcat(file_name, "/room1");
+
+    fp = fopen(file_name, "r");
+    while(fgets(line, 80, fp)) {
+        printf("%s %s", file_name, line);
+    }*/
+}
+
 int main() {
     
     srand(time(NULL));
-//    testing();
     make_rooms();
     intro();
+    printf("got here");
+    the_game();
+    
+    printf("\n");
 
     return 0;
 }
