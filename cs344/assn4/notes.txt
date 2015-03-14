@@ -1,0 +1,5 @@
+Observations:
+    The key will be at least as long as the text
+    Only valid characters are capital letters and ' '.
+    Presumably we will return an error if there was a mistake
+    
