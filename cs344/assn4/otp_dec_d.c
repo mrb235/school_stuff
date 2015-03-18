@@ -30,7 +30,7 @@ int bad_chars_check(char *str) {
 int data_error_check(char *text, char *key) {
     int n = 0;
     if(strlen(text) > strlen(key)){
-        fprintf(stderr,"Key ( %d ) is shorter than text ( %d ).\n", strlen(key), strlen(text));
+        fprintf(stderr,"Key is shorter than text.\n");
         return 1;
     }
     n = bad_chars_check(text);
@@ -51,7 +51,10 @@ int char_num(char c){
 char get_encrypted_char(char t, char k) {
     int t_int = char_num(t);
     int k_int = char_num(k);
-    int result = (t_int + k_int) % 27;
+    int result = (t_int - k_int) % 27;
+    if(result < 0) 
+        result += 27;
+
     if(result == 0) {
         return ' ';
     }
@@ -63,7 +66,7 @@ char get_encrypted_char(char t, char k) {
 
 char* encrypt(char *text, char *key) {
     char temp[2] = " ";
-    char *encrypted_text = malloc(75000);
+    char *encrypted_text = malloc(100000);
     int i = 0;
     strcpy(encrypted_text, "");
     for (i = 0; i < strlen(text); ++i) {
@@ -73,36 +76,8 @@ char* encrypt(char *text, char *key) {
     return encrypted_text;
 }
 
-void write_stuff(int sockfd, char *buffer) {
-}
-/*
-void read_stuff(int newsockfd, char *buffer) {
-    int n;
-    int *size = 0;
-    int read_amount = 0;
-
-    n = read(newsockfd, size, sizeof(int));
-    if (n < 0) {
-        fprintf(stderr, "newsockfd: %d", newsockfd);
-        error("ERROR reading sizeof from socket");
-    }
-
-    n = write(newsockfd, size, sizeof(int));
-    if (n < 0)
-        error("ERROR writing sizeof to socket");
-    
-    memset(buffer, 0, 150000);
-    n = 0;
-    do {
-        n = read(newsockfd, buffer + read_amount, 149999);
-        if (n < 0)
-            error("ERROR reading buffer from socket");
-
-    } while(read_amount < *size);
-
-}*/
-
 void verify_encrypt(int newsockfd) {
+
     int n;
     int size;
     n = read(newsockfd, &size, sizeof(int));
@@ -111,18 +86,15 @@ void verify_encrypt(int newsockfd) {
         error("ERROR reading encrypt verify variagble from socket");
     }
 
-    
-    int verify_size = 10;
-
+    int verify_size = 20;
+         
     n = write(newsockfd, &verify_size, sizeof(int));
     if (n < 0)
         error("ERROR writing encrypt variable to socket");
-    
-    if(size != verify_size) {
-        //error("Wrong module tried to connect with the encrypt server");
-        _exit(1);
-    }
 
+    if(verify_size != size)
+        _exit(1);
+         
 }
 
 int main(int argc, char *argv[])
@@ -179,7 +151,7 @@ int main(int argc, char *argv[])
 
 //    fprintf(stderr, "newsockfd: %d", newsockfd);
 //    read_stuff(newsockfd, buffer);
- //   int n;
+//   int n;
     int size = 0;
     int read_amount = 0;
 
@@ -190,11 +162,11 @@ int main(int argc, char *argv[])
         fprintf(stderr, "newsockfd: %d n: %d\n", newsockfd, n);
         error("ERROR reading sizeof from socket");
     }
-
+    
     n = write(newsockfd, &size, sizeof(int));
     if (n < 0)
         error("ERROR writing sizeof to socket");
-    //fprintf(stderr, "size: %d", size);
+
     char buffer[size + 2];
     strcpy(buffer, "");
     memset(buffer, 0, size + 2);
@@ -203,14 +175,9 @@ int main(int argc, char *argv[])
         n = read(newsockfd, buffer + read_amount, size - 1);
         if (n < 0)
             error("ERROR reading buffer from socket");
-        read_amount += n;
-
+            read_amount += n;
+    
     } while(read_amount < size);
-
-    //fprintf(stderr, "buffer just after read: %s %d\n",buffer, strlen(buffer));
-    //fprintf(stderr, "read_amount: %d \n size: %d\n", read_amount, size);
-
-
 
 
     char *text = malloc((size / 2) + 1);
@@ -226,8 +193,6 @@ int main(int argc, char *argv[])
     char *encrypted_text = malloc((size / 2) + 1);
     strcpy(encrypted_text, "");
 
-//    printf("Testing strings \ntext: %s %d  \nkey: %s %d \n", text, strlen(text), key, strlen(key));
-
     int error_check = data_error_check(text, key);
     if (error_check == 0) {
         encrypted_text = encrypt(text, key);
@@ -242,24 +207,21 @@ int main(int argc, char *argv[])
 
     int size_verify = 0;
     size = strlen(encrypted_text);
-
+     
     n = write(newsockfd, &size, sizeof(size));
     if(n < 0)
         error("ERROR writing sizeof for decrpyted to socket");
-
+    
     n = read(newsockfd, &size_verify, sizeof(size_verify));
     if(n < 0)
         error("Error reading sizeof verify from socket post encrypt");
-
-    if(size != size_verify) 
+    
+    if(size != size_verify)
         error("size and size_verify post encrypte aren't equal");
-    //fprintf(stderr, "encrypted text from server: %s\n", encrypted_text);
 
     n = write(newsockfd, encrypted_text, size);
     if (n < 0) 
         fprintf(stderr, "ERROR writing to socket");
-
-
 
     close(newsockfd);
     close(sockfd);

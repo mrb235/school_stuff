@@ -50,7 +50,7 @@ void bad_chars_check(char *str){
 //then runs them individually through bad_chars_check()
 void file_error_check(char *buffer, char *key) {
     if(strlen(buffer) > strlen(key)){
-        fprintf(stderr,"Key ( %d ) is shorter than text ( %d ).\n", strlen(key), strlen(buffer));
+        fprintf(stderr,"Key is shorter than text.\n");
         _exit(1);
     }
     bad_chars_check(buffer);
@@ -70,18 +70,23 @@ char* get_file(char *file) {
 
 void verify_encrypt(int sockfd) {
     int n;
-    int size = 10;
-    int size_verify = 0;
-    n = write(sockfd, &size, sizeof(size));
+    int size = 20;
+    int size_verify;
+    n = write(sockfd, &size, sizeof(int));
+    if (n < 0) {
+        error("ERROR writing encrypt verify variagble to socket");
+    }     
+         
+    n = read(sockfd, &size_verify, sizeof(int));
     if (n < 0)
-        error("ERROR writing sizeof to socket");
+        error("ERROR reading encrypt variable from socket");    
 
-    n = read(sockfd, &size_verify, sizeof(size_verify));
-    if (n < 0)
-        error("ERROR reading sizeof verify from socket");
-    if(size_verify != 10){
-        error("Didn't give correct socket address for encrypt module\n");
-    }
+   // printf("size_verify: %d\n",size_verify);
+
+    if(size_verify != 20){
+        error("Didn't receive correct socket address for decrypt module\n");
+    }   
+
 }
 
 int main(int argc, char *argv[])
@@ -106,10 +111,7 @@ int main(int argc, char *argv[])
     file_key = get_file(argv[2]);
 
     file_error_check(file_buffer, file_key);
-
-
-    //fprintf(stderr, "before memory allocated to buffer\n");
-
+    
     int buffer_initial_size = strlen(file_buffer) + strlen(file_key) + 1;
     char buffer[buffer_initial_size];
     strcpy(buffer, file_buffer);
@@ -118,9 +120,7 @@ int main(int argc, char *argv[])
 
     free(file_buffer);
     free(file_key);
-    //fprintf(stderr, "before write cats    %s\n", buffer);
 
-    //fprintf(stderr, "after cats\n");
     portno = atoi(argv[3]);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -143,15 +143,13 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
 
-//    fprintf(stderr,"Length of buffer: ( %d )\n", strlen(buffer));
-    
-//    write_stuff(sockfd, buffer);
+//    n = write(sockfd,buffer,strlen(buffer));
+
     int size = strlen(buffer);
     int size_verify = 0;
 
     verify_encrypt(sockfd);
-
-    //fprintf(stderr, "before write buffer: %s %d\n", buffer, size);
+ 
     n = write(sockfd, &size, sizeof(size));
     if (n < 0)
         error("ERROR writing sizeof to socket");
@@ -163,25 +161,21 @@ int main(int argc, char *argv[])
     if(size_verify != size) {
         error("size and size_verify aren't equal");
     }
-    //fprintf(stderr, "before write cats\n");
 
-    n = write(sockfd, buffer, size_verify);
-    if (n < 0) 
-         error("ERROR writing to socket");
-//    memset(buffer, 0, strlen(buffer));
-    
-//o    read_stuff(sockfd,buffer);
+    n = write(sockfd, buffer, strlen(buffer));
+    if (n < 0)
+        error("ERROR writing to socket");
 
     size = 0;
-
+     
     n = read(sockfd, &size, sizeof(int));
     if(n < 0)
-        error("ERROR reading sizeof from socket post encrypt failed");
-
+        error("ERROR reading sizeof from socket post decrypt failed");
+                 
     n = write(sockfd, &size, sizeof(int));
     if(n < 0)
-        error("ERROR writing sizeof to socket post encrypt");
-
+        error("ERROR writing sizeof to socket post decrypt");
+                 
     strcpy(buffer, "");
     memset(buffer, 0, buffer_initial_size);
     n = 0;
@@ -189,15 +183,13 @@ int main(int argc, char *argv[])
     do {
         n = read(sockfd, buffer + read_amount, size - 1);
         if(n < 0)
-            error("ERROR reading buffer from socket post encrypt");
+            error("ERROR reading buffer from socket post decrypt");
         read_amount += n;
-    
+                 
     }while(read_amount < size);
 
 
-
     printf("%s",buffer);
-
     close(sockfd);
 
     
